@@ -4,7 +4,6 @@ import numpy as np
 
 from sklearn.externals import joblib
 
-
 def jeiba_cut(cons, POSswitch=0):
     if POSswitch == 0:
         rs = ' '.join(jieba.cut(dropuselesschars(cons)))
@@ -18,7 +17,6 @@ def jeiba_cut(cons, POSswitch=0):
                 aplst.append(n)
         rs = ' '.join(aplst)
     return rs
-
 
 def dropuselesschars(rs):
     import re
@@ -45,7 +43,6 @@ def dropuselesschars(rs):
 
     return rs
 
-
 def jeiba_dostop(text, stopwordfile='stopword_chi.txt', translate=''):
     # 存停用詞, 分詞, 過濾後分詞的list
     stopWords = []
@@ -65,14 +62,20 @@ def jeiba_dostop(text, stopwordfile='stopword_chi.txt', translate=''):
     remainderWords = ' '.join(remainderWords)
     return remainderWords
 
-
 def ml_module_load(fp):
     return joblib.load(fp)
-
 
 def ml_module_save(X, fp):
     joblib.dump(X, fp)
 
+# 載入model yaml & model weight
+def load_model_yaml_weight(yaml_path, weight_path):
+    from keras.models import model_from_yaml
+    with open(yaml_path) as yamlfile:
+        loaded_model_yaml = yamlfile.read()
+    model = model_from_yaml(loaded_model_yaml)
+    model.load_weights(weight_path)
+    return model
 
 def random_split(all_df, spn=0.8):
     msk = np.random.rand(len(all_df)) < 0.8
@@ -80,15 +83,28 @@ def random_split(all_df, spn=0.8):
     test_df = all_df[~msk]
     return train_df, test_df
 
-
+# 打亂資料
 def shuffle_dataset(x, t):
     permutation = np.random.permutation(x.shape[0])
     x = x[permutation, :] if x.ndim == 2 else x[permutation, :, :, :]
     t = t[permutation]
     return x, t
 
-
 def getcs_score(cs, articleid):
     for pos in cs[articleid].argsort()[::-1][1:]:
         score = cs[articleid][pos]
     return score
+
+# 讀取圖檔尺寸 & 看圖檔
+def read_img_manview(filepath, shapearg=1, imgshowarg=1):
+    import matplotlib.pyplot as plt
+    import matplotlib.image as mpimg
+    import os
+    if os.path.isfile(filepath):
+        img1 = mpimg.imread(filepath)
+        if shapearg == 1: print(img1.shape)
+        if imgshowarg == 1:
+            plt.imshow(img1)
+            plt.show()
+    else:
+        print('%s is not exist')
