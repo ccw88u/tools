@@ -3,6 +3,7 @@ import jieba.posseg
 import numpy as np
 
 from sklearn.externals import joblib
+from PIL import Image
 
 def jeiba_cut(cons, POSswitch=0):
     if POSswitch == 0:
@@ -95,6 +96,13 @@ def getcs_score(cs, articleid):
         score = cs[articleid][pos]
     return score
 
+# softmax predict 最高分數類別及信心值
+def model_predict_class_confidence(result):
+    pred_classes = result.argmax(axis=-1)
+    pred_class_label = pred_classes[0]
+    pred_confidence = result[0][pred_class_label]
+    return pred_class_label, pred_confidence
+
 # 讀取圖檔尺寸 & 看圖檔
 def read_img_manview(filepath, shapearg=1, imgshowarg=1):
     import matplotlib.pyplot as plt
@@ -108,3 +116,19 @@ def read_img_manview(filepath, shapearg=1, imgshowarg=1):
             plt.show()
     else:
         print('%s is not exist')
+
+
+# 讀取圖檔，並直接resize--PIL Image
+def resize_image_imgarray(imgpath, rswidth=64, rsheight=64):
+    from PIL import Image
+    img = Image.open(imgpath)
+    img = img.resize((rswidth, rsheight), resample=Image.BILINEAR)
+    return img
+
+# 讀取圖檔，並直接resize--opencv
+def resize_image_imgarray_cv2(imgpath, rswidth=64, rsheight=64):
+    import cv2
+    img = cv2.imread(imgpath, cv2.IMREAD_COLOR)
+    ##寬，高
+    img = cv2.resize(img, (rsheight, rswidth), interpolation=cv2.INTER_CUBIC)    
+    return img
