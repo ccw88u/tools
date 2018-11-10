@@ -3,7 +3,7 @@ import jieba.posseg
 import numpy as np
 
 from sklearn.externals import joblib
-
+from PIL import Image
 
 def jeiba_cut(cons, POSswitch=0):
     if POSswitch == 0:
@@ -18,7 +18,6 @@ def jeiba_cut(cons, POSswitch=0):
                 aplst.append(n)
         rs = ' '.join(aplst)
     return rs
-
 
 def dropuselesschars(rs):
     import re
@@ -45,7 +44,6 @@ def dropuselesschars(rs):
 
     return rs
 
-
 def jeiba_dostop(text, stopwordfile='stopword_chi.txt', translate=''):
     # 存停用詞, 分詞, 過濾後分詞的list
     stopWords = []
@@ -65,14 +63,20 @@ def jeiba_dostop(text, stopwordfile='stopword_chi.txt', translate=''):
     remainderWords = ' '.join(remainderWords)
     return remainderWords
 
-
 def ml_module_load(fp):
     return joblib.load(fp)
-
 
 def ml_module_save(X, fp):
     joblib.dump(X, fp)
 
+# 載入model yaml & model weight
+def load_model_yaml_weight(yaml_path, weight_path):
+    from keras.models import model_from_yaml
+    with open(yaml_path) as yamlfile:
+        loaded_model_yaml = yamlfile.read()
+    model = model_from_yaml(loaded_model_yaml)
+    model.load_weights(weight_path)
+    return model
 
 def random_split(all_df, spn=0.8):
     msk = np.random.rand(len(all_df)) < 0.8
@@ -80,15 +84,51 @@ def random_split(all_df, spn=0.8):
     test_df = all_df[~msk]
     return train_df, test_df
 
-
+# 打亂資料
 def shuffle_dataset(x, t):
     permutation = np.random.permutation(x.shape[0])
     x = x[permutation, :] if x.ndim == 2 else x[permutation, :, :, :]
     t = t[permutation]
     return x, t
 
-
 def getcs_score(cs, articleid):
     for pos in cs[articleid].argsort()[::-1][1:]:
         score = cs[articleid][pos]
     return score
+
+# softmax predict 最高分數類別及信心值
+def model_predict_class_confidence(result):
+    pred_classes = result.argmax(axis=-1)
+    pred_class_label = pred_classes[0]
+    pred_confidence = result[0][pred_class_label]
+    return pred_class_label, pred_confidence
+
+# 讀取圖檔尺寸 & 看圖檔
+def read_img_manview(filepath, shapearg=1, imgshowarg=1):
+    import matplotlib.pyplot as plt
+    import matplotlib.image as mpimg
+    import os
+    if os.path.isfile(filepath):
+        img1 = mpimg.imread(filepath)
+        if shapearg == 1: print(img1.shape)
+        if imgshowarg == 1:
+            plt.imshow(img1)
+            plt.show()
+    else:
+        print('%s is not exist')
+
+
+# 讀取圖檔，並直接resize--PIL Image
+def resize_image_imgarray(imgpath, rswidth=64, rsheight=64):
+    from PIL import Image
+    img = Image.open(imgpath)
+    img = img.resize((rswidth, rsheight), resample=Image.BILINEAR)
+    return img
+
+# 讀取圖檔，並直接resize--opencv
+def resize_image_imgarray_cv2(imgpath, rswidth=64, rsheight=64):
+    import cv2
+    img = cv2.imread(imgpath, cv2.IMREAD_COLOR)
+    ##寬，高
+    img = cv2.resize(img, (rsheight, rswidth), interpolation=cv2.INTER_CUBIC)    
+    return img
