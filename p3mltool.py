@@ -132,3 +132,30 @@ def resize_image_imgarray_cv2(imgpath, rswidth=64, rsheight=64):
     ##寬，高
     img = cv2.resize(img, (rsheight, rswidth), interpolation=cv2.INTER_CUBIC)    
     return img
+
+# 批次讀取某個路徑下圖檔及其onehot label
+# load_data('./dataset/test/')
+def load_dataload_data(dirpath, imgfmt='jpg', img_w=256, img_h=256, readmax=1000000):
+    import os
+    if dirpath[-1] != os.sep: dirpath += os.sep
+    files = os.listdir(dirpath)
+    files.sort()
+    images = []
+    labels = []
+    labeint = 0
+    for filedir in files:
+        picfiles = glob.glob('%s%s/*.%s' % (dirpath, filedir, imgfmt))
+        for f in picfiles:
+            # print('f', f)
+            img_path = f
+            img = image.load_img(img_path, target_size=image_size)
+            img_array = image.img_to_array(img)
+            images.append(img_array)
+
+            labels.append(labeint)
+        labeint += 1
+    data = np.array(images)
+    labels = np.array(labels)
+
+    labels = np_utils.to_categorical(labels, labeint)
+    return data, labels
