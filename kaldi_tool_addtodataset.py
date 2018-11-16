@@ -3,6 +3,7 @@ import sys
 import re
 import time
 
+# 收集聲音資料集後, 產生生成kaldi format file: spk2utt / utt2spk / text / wav.scp 準備做force alignment decode
 #command
 # python3 kaldi_tool_addtodataset.py $dir1 $userid
 # python3 kaldi_tool_addtodataset.py grammarsentence_wav ponddyperson1
