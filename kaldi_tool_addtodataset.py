@@ -1,4 +1,4 @@
-import glob
+import glob, os
 import sys
 import re
 import time
@@ -24,33 +24,36 @@ import time
 # NEWG10_M0201F_10_01 {path}/Test_Wav/001.wav
 # NEWG10_M0202F_10_02 {path}/Test_Wav/002.wav
 
+# When finish the command, need to change wav.scp {relative path} to replace the file relative path.
+# such as    replace {relative path} => /XXX/YYY/ZZZ/
+
 def main():
-    dealdir, userid = sys.argv[1]
+    dealdir, userid = sys.argv[1:]
     dealfiles = glob.glob('%s/*.wav' % dealdir)
     dealfiles.sort()
 
     wf = open('spk2utt', 'w')
     for fp in dealfiles:
         fpname = os.path.basename(fp)        
-        wf.write('%s %s_%s' % (userid, userid, fpname.split('.')[0]))
+        wf.write('%s %s_%s\n' % (userid, userid, fpname.split('.')[0]))
     wf.close()
 
     wf = open('utt2spk', 'w')
     for fp in dealfiles:
         fpname = os.path.basename(fp)        
-        wf.write('%s_%s %s' % (userid, fpname.split('.')[0], userid))
+        wf.write('%s_%s %s\n' % (userid, fpname.split('.')[0], userid))
     wf.close()
 
     wf = open('text', 'w')
     for fp in dealfiles:
         fpname = os.path.basename(fp)        
-        wf.write('%s_%s %s' % (userid, fpname.split('.')[0], 'auto decode'))
+        wf.write('%s_%s %s\n' % (userid, fpname.split('.')[0], 'auto decode'))
     wf.close()
 
     wf = open('wav.scp', 'w')
     for fp in dealfiles:
         fpname = os.path.basename(fp)        
-        wf.write('%s_%s {relative path}/%s' % (userid, fpname.split('.')[0], fp))
+        wf.write('%s_%s {relative path}/%s\n' % (userid, fpname.split('.')[0], fp))
     wf.close()
 
 def ps(fn,fv=''):
