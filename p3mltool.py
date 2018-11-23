@@ -133,6 +133,12 @@ def resize_image_imgarray_cv2(imgpath, rswidth=64, rsheight=64):
     img = cv2.resize(img, (rsheight, rswidth), interpolation=cv2.INTER_CUBIC)    
     return img
 
+# 變更圖檔大小後，直接進行檔案儲存
+def resize_image(imgpath, savepath, rswidth=64, rsheight=64):
+    img = Image.open(imgpath)
+    img = img.resize((rswidth, rsheight), resample=Image.BILINEAR)
+    img.save(savepath)
+
 # 批次讀取某個路徑下圖檔及其onehot label
 # load_data('./dataset/test/')
 def load_dataload_data(dirpath, imgfmt='jpg', img_w=256, img_h=256, readmax=1000000):
