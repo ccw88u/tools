@@ -38,6 +38,7 @@ def main():
     for fp in dealfiles:
         fpname = os.path.basename(fp)        
         wf.write('NEWG10_M%06dF NEWG10_M%06dF_%s\n' % (runint, runint, fpname.split('.')[0]))
+        #wf.write('%s %s_%s\n' % (userid, userid, fpname.split('.')[0]))        
         runint += 1
     wf.close()
 
@@ -46,6 +47,7 @@ def main():
     for fp in dealfiles:
         fpname = os.path.basename(fp)        
         wf.write('NEWG10_M%06dF_%s NEWG10_M%06dF\n' % (runint, fpname.split('.')[0], runint))
+        #wf.write('%s_%s %s\n' % (userid, fpname.split('.')[0], userid))
         runint += 1
     wf.close()
 
@@ -62,7 +64,8 @@ def main():
         filetxt = 'auto decode'
         if os.path.isfile(filetxtpath):
             yestone_filter_lst, notone_filter_lst = readtxtcontent(filetxtpath)
-        wf.write('%s_%s %s\n' % (userid, fpname.split('.')[0], ' '.join(notone_filter_lst)))
+        wf.write('NEWG10_M%06dF_%s %s\n' % (runint, fpname.split('.')[0], ' '.join(notone_filter_lst)))
+        #wf.write('%s_%s %s\n' % (userid, fpname.split('.')[0], ' '.join(notone_filter_lst)))
         runint += 1
     wf.close()
 
@@ -70,7 +73,11 @@ def main():
     wf = open('wav.scp', 'w')
     for fp in dealfiles:
         fpname = os.path.basename(fp)        
+        #wf.write('NEWG10_M%06dF_%s {relative path}/%s\n' % (runint, fpname.split('.')[0], fp))
+        # /home/ccw88u/src/pyworks/deeplearning/kaldi2/egs/tcc300/s2/Test_Wav/ponddy_dialoguesentence
         wf.write('NEWG10_M%06dF_%s {relative path}/%s\n' % (runint, fpname.split('.')[0], fp))
+        #wf.write('NEWG10_M%06dF_%s /home/ccw88u/src/pyworks/deeplearning/kaldi2/egs/tcc300/s2/Test_Wav/ponddy_dialoguesentence/%s\n' % (runint, fpname.split('.')[0], fp))
+        #wf.write('%s_%s /home/ccw88u/src/pyworks/deeplearning/kaldi2/egs/tcc300/s2/Test_Wav/ponddy_dialoguesentence/dialoguesentence_wav/%s\n' % (userid, fpname.split('.')[0], fp))
         runint += 1
     wf.close()
 
