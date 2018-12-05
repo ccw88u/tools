@@ -90,7 +90,6 @@ def readtxtcontent(filetxtpath):
         linelst = line.split()
         linev = ''.join(linelst)
         lines.append(linev)
-    wf.close()
 
     retline = ''.join(lines)
 
