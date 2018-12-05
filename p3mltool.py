@@ -184,15 +184,18 @@ def build_model_transfer(application, img_w, img_h, num_class, lastdensesize=512
 
     if application == 'inceptionv3':
         base_model = InceptionV3(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 48 * 48 default: 224 * 224    
     elif application == 'vgg16':
         base_model = VGG16(input_tensor=input_tensor, weights='imagenet', include_top=True)
     elif application == 'vgg19':
         base_model = VGG19(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 197 * 197 default: 224 * 224     
     elif application == 'resnet50':
         base_model = ResNet50(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 32 * 32 default: 224 * 224    
     elif application == 'mobilenet':
         base_model = MobileNet(input_tensor=input_tensor, weights='imagenet', include_top=True)
-    elif application == 'Xception':   
+    elif application == 'Xception':
         base_model = Xception(input_tensor=input_tensor, weights='imagenet', include_top=True)
     elif application == 'densenet121':
         base_model = densenet.DenseNet121(input_tensor=input_tensor, weights='imagenet', include_top=True)
@@ -203,7 +206,7 @@ def build_model_transfer(application, img_w, img_h, num_class, lastdensesize=512
     elif application == 'nasnetlarge':
         base_model = densenet.NASNetLarge(input_tensor=input_tensor, weights='imagenet', include_top=True)
     elif application == 'nasnetmobile':
-        base_model = densenet.NASNetMobile(input_tensor=input_tensor, weights='imagenet', include_top=True)                
+        base_model = densenet.NASNetMobile(input_tensor=input_tensor, weights='imagenet', include_top=True)
     elif application == 'inceptionresnetv2':
          base_model = InceptionResNetV2(input_tensor=input_tensor, weights='imagenet', include_top=True)
     
