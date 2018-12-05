@@ -9,5 +9,5 @@ for i in dlist:
         ##['163M', './nclcdr']
         if len(tlst) == 2:
             if tlst[0].find('G') != -1:
-                print line
+                print(line)
     of.close()
