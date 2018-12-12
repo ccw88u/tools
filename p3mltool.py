@@ -218,3 +218,55 @@ def build_model_transfer(application, img_w, img_h, num_class, lastdensesize=512
     #model.summary()
     
     return model
+
+# 由漢語拼音(有音調) 取得該字注音音調
+def checktone(wordpinyin):
+    # 部分符合該字為1聲
+    tone1words = ['ā', 'ē', 'ī', 'ō', 'ū']
+    # 全部符合該字為1聲
+    tone1fulls = ['a', 'ba', 'de', 'ge', 'guo', 'hei', 'la', 'le', 'li', 'lou', 'ma', 'men', 'ne', 'wa', 'ya',
+                  'zhe', 'shi', 'me', 'da', 'shang', 'luo', 'zi', 'fu', 'di', 'he', 'huo', 'mo', 'bo', 'hu']
+    # 部分符合該字為2聲
+    tone2words = ['á', 'é', 'í', 'ó', 'ú', 'ǘ', 'ḿ', 'ń']  
+    # 部分符合該字為2聲
+    tone3words = ['ǎ', 'ě', 'ǐ', 'ǒ', 'ǔ', 'ǚ']
+    tone4words = ['à', 'è', 'ì', 'ò', 'ù', 'ǹ', 'ǜ']
+    
+    # print('wordpinyin', wordpinyin)
+    findtone = -1    
+    tone1find = False
+    for tv in tone1words:
+        if wordpinyin.find(tv) != -1:
+            findtone = 1
+            tone1find = True
+    for tv in tone1fulls:
+        if wordpinyin == tv:
+            findtone = 1
+            tone1find = True
+
+    tone2find = False
+    for tv in tone2words:
+        if wordpinyin.find(tv) != -1:
+            findtone = 2
+            tone2find = True
+
+    tone3find = False
+    for tv in tone3words:
+        if wordpinyin.find(tv) != -1:
+            findtone = 3
+            tone3find = True
+
+    tone4find = False
+    for tv in tone4words:
+        if wordpinyin.find(tv) != -1:
+            findtone = 4
+            tone4find = True
+    
+    # 找到兩個音, 代表有問題
+    Twotonefinded = False
+    if tone1find == tone2find == True or tone2find == tone3find == True or tone3find == tone4find == True \
+        or tone1find == tone4find == True:
+        Twotonefinded = True
+
+    return Twotonefinded, findtone
+
