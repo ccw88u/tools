@@ -212,3 +212,18 @@ def getListOfFiles(dirName):
 
 def chunks_nums(arr, m=10):
     return [arr[i:i+m] for i in range(0, len(arr), m)]
+
+# 比較檔案是否是在定義的時間範圍內
+def countfiledate(ckfile, difftime):
+    flag = 0 
+    import os, time
+    todayint = int(time.mktime(time.localtime()))
+    if os.path.isfile(ckfile):
+        stats = os.stat(ckfile)
+        lastmod_date = time.localtime(stats[8])
+        filetime = int(time.mktime(lastmod_date))
+        ##ps('diff', (filetime - todayint))
+        ## 代表在時間範圍內 
+        if (todayint - filetime) < difftime:
+            flag = 1
+    return flag    
