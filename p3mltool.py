@@ -269,3 +269,4 @@ def checktone(wordpinyin):
         Twotonefinded = True
 
     return Twotonefinded, findtone
+

@@ -61,6 +61,7 @@ def main():
         ft_txt = ft_head + '.txt'
         filetxtpath = fh + '/' + ft_txt
 
+        ps('filetxtpath', filetxtpath)
         filetxt = 'auto decode'
         if os.path.isfile(filetxtpath):
             yestone_filter_lst, notone_filter_lst = readtxtcontent(filetxtpath)
