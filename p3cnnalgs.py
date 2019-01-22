@@ -314,7 +314,6 @@ def inception_resnet_v1_backbone(nb_classes=1000, scale=True):
 
 # -------------------inception_resnet_v2{S}-------------------
 
-
 RESNET_V2_A_COUNT = 0
 RESNET_V2_B_COUNT = 0
 RESNET_V2_C_COUNT = 0
@@ -497,7 +496,6 @@ def inception_resnet_v2(img_w, img_h, nb_classes, channels=3, scale=True):
 
 
 # -------------------inceptionv4{S}-------------------
-
 
 from keras.layers import Input
 from keras.layers.merge import concatenate
