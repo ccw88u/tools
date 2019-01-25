@@ -11,13 +11,13 @@ from keras.layers import Input, add
 
 
 # -------------------simp CNN{S}-------------------
-def build_model():
+def build_model_cnn1(img_w, img_h, nb_classes, channels=3):
     # 建立簡單的線性執行的模型
     model = Sequential()
     # 建立卷積層，filter=32,即 output size, Kernal Size: 2x2, activation function 採用 relu
     ## old : input_shape=(20, 11, 3)
     ## new : input_shape=(140, 257, 3)
-    model.add(Conv2D(32, kernel_size=(2, 2), activation='relu', input_shape=(140, 257, 3)))
+    model.add(Conv2D(32, kernel_size=(2, 2), activation='relu', input_shape=(img_h, img_w, channels)))
     # 建立池化層，池化大小=2x2，取最大值
     model.add(MaxPooling2D(pool_size=(2, 2)))
     # Dropout層隨機斷開輸入神經元，用於防止過度擬合，斷開比例:0.25
@@ -28,13 +28,14 @@ def build_model():
     model.add(Dense(512, activation='relu'))
     model.add(Dropout(0.5))
     # Add output layer
-    model.add(Dense(tone_num, activation='softmax'))
+    model.add(Dense(nb_classes, activation='softmax'))
     return model
 
-def build_model(img_h, img_w, tone_num):
+
+def build_model_cnn2(img_w, img_h, nb_classes, channels=3):
     model = Sequential()
 
-    model.add(Conv2D(32, kernel_size=(3, 3), input_shape=(img_h, img_w, 1),
+    model.add(Conv2D(32, kernel_size=(3, 3), input_shape=(img_h, img_w, channels),
                 activation='relu', padding='same'))
     model.add(MaxPool2D())
     model.add(Dropout(0.3))
@@ -55,8 +56,40 @@ def build_model(img_h, img_w, tone_num):
     model.add(Dense(512, activation='relu'))
     model.add(Dropout(0.5))
 
-    model.add(Dense(tone_num, activation='softmax'))
+    model.add(Dense(nb_classes, activation='softmax'))
     return model
+
+
+def build_model_cnn3(img_w, img_h, nb_classes, channels=3):
+    #nb_filters = 32  # number of convolutional filters to use
+    nb_filters = 128  # number of convolutional filters to use
+    pool_size = (2, 2)  # size of pooling area for max pooling
+    kernel_size = (3, 3)  # convolution kernel size
+    nb_layers = 2
+    #nb_layers = 8
+    input_shape = (img_h, img_w, channels)
+
+    model = Sequential()
+    model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[1],
+                        border_mode='valid', input_shape=input_shape))
+    model.add(BatchNormalization(axis=1))
+    model.add(Activation('relu'))
+
+    for layer in range(nb_layers-1):
+        model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[1]))
+        model.add(BatchNormalization(axis=1))
+        model.add(ELU(alpha=1.0))  
+        model.add(MaxPooling2D(pool_size=pool_size))
+        model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(2048))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(nb_classes))
+    model.add(Activation("softmax"))
+    return model
+
 # -------------------simp CNN{E}-------------------
 
 
@@ -1015,6 +1048,7 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
     
     INPUTSIZE = (img_h, img_w, channels)
 
+    print('model %s' % application)
     # min size: 139 * 139 * 1  => voice mfcc  
     if application == 'inceptionv3':
         base_model = InceptionV3(include_top=False, weights=None,
@@ -1023,6 +1057,7 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
     elif application == 'vgg16':
         base_model = VGG16(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max')  
+    # smallest: 40 * 40     
     elif application == 'vgg19':
         base_model = VGG19(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max')  
@@ -1035,7 +1070,6 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
         base_model = MobileNet(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max')  
     elif application == 'Xception':
-        print('Xception')
         base_model = Xception(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max')  
     elif application == 'densenet121':
@@ -1046,7 +1080,6 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
             input_shape=INPUTSIZE, pooling='max') 
     # min size: 221 * 221 * 1  => voice mfcc
     elif application == 'densenet201':       
-        print('densenet201')
         base_model = densenet.DenseNet201(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max')   
     elif application == 'nasnet':
@@ -1056,7 +1089,6 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
         base_model = NASNetLarge(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max') 
     elif application == 'nasnetmobile':
-        print('nasnetmobile')
         base_model = NASNetMobile(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max') 
     elif application == 'inceptionresnetv2':
