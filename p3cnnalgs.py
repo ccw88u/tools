@@ -586,7 +586,7 @@ def reduction_resnet_B(x_input):
     return x
  
  
-def inception_resnet_v1_backbone(img_h, img_w, nb_classes, channels=3,, scale=True):
+def inception_resnet_v1_backbone(img_h, img_w, nb_classes, channels=3, scale=True):
     x_input = Input(shape=(img_h, img_w, channels))
     # stem
     x = resnet_v1_stem(x_input)
@@ -1011,9 +1011,9 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
     from keras.applications.vgg19 import VGG19
     from keras.applications.resnet50 import ResNet50
     from keras.applications.mobilenet import MobileNet
-    from keras.applications.nasnet import NASNet  ## NASNetLarge, NASNetMobile
+    from keras.applications.nasnet import NASNet,NASNetMobile,NASNetLarge 
     
-    INPUTSIZE = (img_h, img=w, channels)
+    INPUTSIZE = (img_h, img_w, channels)
 
     # min size: 139 * 139 * 1  => voice mfcc  
     if application == 'inceptionv3':
@@ -1035,6 +1035,7 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
         base_model = MobileNet(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max')  
     elif application == 'Xception':
+        print('Xception')
         base_model = Xception(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max')  
     elif application == 'densenet121':
@@ -1042,21 +1043,25 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
             input_shape=INPUTSIZE, pooling='max')  
     elif application == 'densenet169':
         base_model = densenet.DenseNet169(include_top=False, weights=None,
-            input_shape=INPUTSIZE, pooling='max')
+            input_shape=INPUTSIZE, pooling='max') 
     # min size: 221 * 221 * 1  => voice mfcc
     elif application == 'densenet201':       
         print('densenet201')
         base_model = densenet.DenseNet201(include_top=False, weights=None,
-            input_shape=INPUTSIZE, pooling='max')        
+            input_shape=INPUTSIZE, pooling='max')   
+    elif application == 'nasnet':
+        base_model = NASNet(include_top=False, weights=None,
+            input_shape=INPUTSIZE, pooling='max')         
     elif application == 'nasnetlarge':
-        base_model = densenet.NASNetLarge(include_top=False, weights=None,
-            input_shape=INPUTSIZE, pooling='max')
+        base_model = NASNetLarge(include_top=False, weights=None,
+            input_shape=INPUTSIZE, pooling='max') 
     elif application == 'nasnetmobile':
-        base_model = densenet.NASNetMobile(include_top=False, weights=None,
-            input_shape=INPUTSIZE, pooling='max')
+        print('nasnetmobile')
+        base_model = NASNetMobile(include_top=False, weights=None,
+            input_shape=INPUTSIZE, pooling='max') 
     elif application == 'inceptionresnetv2':
         base_model = InceptionResNetV2(include_top=False, weights=None,
-            input_shape=INPUTSIZE, pooling='max')
+            input_shape=INPUTSIZE, pooling='max') 
     
     x = base_model.output
     #x = Dense(lastdensesize, activation='relu')(x)
