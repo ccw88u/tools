@@ -59,7 +59,7 @@ def build_model_cnn2(img_w, img_h, nb_classes, channels=3):
     model.add(Dense(nb_classes, activation='softmax'))
     return model
 
-
+# maybe you can try next : build_model_cnn3_findtune
 def build_model_cnn3(img_w, img_h, nb_classes, channels=3):
     #nb_filters = 32  # number of convolutional filters to use
     nb_filters = 128  # number of convolutional filters to use
@@ -90,6 +90,44 @@ def build_model_cnn3(img_w, img_h, nb_classes, channels=3):
     model.add(Activation("softmax"))
     return model
 
+
+def build_model_cnn3_findtune(img_w, img_h, nb_classes, channels=3):
+    #nb_filters = 32  # number of convolutional filters to use
+    nb_filters = 512  # number of convolutional filters to use
+    pool_size = (2, 2)  # size of pooling area for max pooling
+    kernel_size = (3, 3)  # convolution kernel size
+    nb_layers = 4
+    #nb_layers = 8
+    #input_shape = (img_h, img_w, channels)
+    INPUTSIZE = (img_h, img_w, channels)
+
+    model = Sequential()
+    model.add(Conv2D(nb_filters,kernel_size,strides=(1,1),input_shape=INPUTSIZE,padding='same',activation='relu',kernel_initializer='random_normal'))
+    model.add(BatchNormalization(axis=1))
+    model.add(Activation('relu'))
+
+    for layer in range(nb_layers-1):
+        if layer == 0:
+            model.add(Conv2D(nb_filters,kernel_size,strides=(1,1),padding='same',activation='relu'))
+            model.add(Conv2D(nb_filters,kernel_size,strides=(1,1),padding='same',activation='relu'))
+        else:
+            model.add(Conv2D(nb_filters,kernel_size,strides=(1,1),padding='same',activation='relu'))
+            model.add(Conv2D(nb_filters,kernel_size,strides=(1,1),padding='same',activation='relu'))
+            model.add(Conv2D(nb_filters,kernel_size,strides=(1,1),padding='same',activation='relu'))
+            model.add(Conv2D(nb_filters,kernel_size,strides=(1,1),padding='same',activation='relu'))                            
+        #model.add(BatchNormalization(axis=1))   
+        #model.add(ELU(alpha=1.0))  
+        model.add(MaxPooling2D(pool_size=pool_size))
+        #model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(4096,activation='relu'))  
+    model.add(Dropout(0.5))  
+    model.add(Dense(4096,activation='relu'))  
+    model.add(Dropout(0.5))  
+    model.add(Dense(nb_classes))
+    model.add(Activation("softmax"))
+    return model
 # -------------------simp CNN{E}-------------------
 
 
@@ -208,7 +246,7 @@ def Conv_Block(inpt,nb_filter,kernel_size,strides=(1,1), with_conv_shortcut=Fals
 
 def resnet50(img_h, img_w, nb_classes, channels=3):
 
-	INPUTSIZE = (img_h, img_w, channels)
+    INPUTSIZE = (img_h, img_w, channels)
 
     img_input = Input(shape=INPUTSIZE)  
     x = ZeroPadding2D((3,3))(img_input)  
@@ -1068,7 +1106,8 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
     # smallest: 32 * 32 default: 224 * 224    
     elif application == 'mobilenet':
         base_model = MobileNet(include_top=False, weights=None,
-            input_shape=INPUTSIZE, pooling='max')  
+            input_shape=INPUTSIZE, pooling='max') 
+    # smallest:71 * 71         
     elif application == 'Xception':
         base_model = Xception(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max')  
@@ -1103,3 +1142,54 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
     #model.summary()
     
     return model
+
+# include imagenet top, transfer learning build model
+def build_model_transfer(application, img_w, img_h, num_class, lastdensesize=512):
+    ##shape can not smaller then 
+    from keras.applications.inception_resnet_v2 import InceptionResNetV2
+    from keras.applications import densenet       ## densenet121, densenet169, densenet201
+    from keras.applications.inception_v3 import InceptionV3
+    from keras.applications.xception import Xception
+    from keras.applications.vgg16 import VGG16
+    from keras.applications.vgg19 import VGG19
+    from keras.applications.resnet50 import ResNet50
+    from keras.applications.mobilenet import MobileNet
+    from keras.applications.nasnet import NASNet  ## NASNetLarge, NASNetMobile
+    
+    input_tensor = Input(shape=(img_w, img_h, 3))
+
+    if application == 'inceptionv3':
+        base_model = InceptionV3(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 48 * 48 default: 224 * 224    
+    elif application == 'vgg16':
+        base_model = VGG16(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'vgg19':
+        base_model = VGG19(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 197 * 197 default: 224 * 224     
+    elif application == 'resnet50':
+        base_model = ResNet50(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 32 * 32 default: 224 * 224    
+    elif application == 'mobilenet':
+        base_model = MobileNet(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'Xception':
+        base_model = Xception(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'densenet121':
+        base_model = densenet.DenseNet121(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'densenet169':
+        base_model = densenet.DenseNet169(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'densenet201':
+        base_model = densenet.DenseNet201(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'nasnetlarge':
+        base_model = densenet.NASNetLarge(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'nasnetmobile':
+        base_model = densenet.NASNetMobile(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'inceptionresnetv2':
+         base_model = InceptionResNetV2(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    
+    x = base_model.output
+    x = Dense(lastdensesize, activation='relu')(x)
+    # 最後一層不要 batch normalize / dropout
+    outputs = Dense(num_class, activation='softmax')(x)    
+    model = Model(base_model.inputs, outputs)
+    #model.summary()    
+    return model    
