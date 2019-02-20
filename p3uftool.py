@@ -26,8 +26,6 @@ def sort_by_value(d):
     return [(backitems[i][1], backitems[i][0]) for i in range(0, len(backitems))]
 
 # dictionary key: 1
-
-
 def put2dicnums(rdic, key, addnum=1):
     if not rdic.get(key, ''):
         rdic[key] = addnum
@@ -70,6 +68,11 @@ def put2dic(rdic, key, val, droprepeat=0):
             rdic[key] = addlst
     return rdic
 
+# two dictionary merge
+def merge_two_dicts(x, y):
+    z = x.copy()   # start with x's keys and values
+    z.update(y)    # modifies z with y's keys and values & returns None
+    return z
 
 def droprepeatlist(runlst, fmt=''):
     retlist = []

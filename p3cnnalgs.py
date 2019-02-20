@@ -128,6 +128,67 @@ def build_model_cnn3_findtune(img_w, img_h, nb_classes, channels=3):
     model.add(Dense(nb_classes))
     model.add(Activation("softmax"))
     return model
+
+
+## https://github.com/petrosgk/Kaggle-Carvana-Image-Masking-Challenge/blob/master/model/u_net.py
+## unet_128 front
+def build_cnn_deep(img_h, img_w, nb_classes, channels=3):
+    
+    input_shape = (img_h, img_w, channels)
+    img_input = Input(shape=input_shape)
+    
+    down1 = Conv2D(64, (3, 3), padding='same')(img_input)
+    down1 = BatchNormalization()(down1)
+    down1 = Activation('relu')(down1)
+    down1 = Conv2D(64, (3, 3), padding='same')(down1)
+    down1 = BatchNormalization()(down1)
+    down1 = Activation('relu')(down1)
+    down1_pool = MaxPooling2D((2, 2), strides=(2, 2))(down1)
+    # 64
+
+    down2 = Conv2D(128, (3, 3), padding='same')(down1_pool)
+    down2 = BatchNormalization()(down2)
+    down2 = Activation('relu')(down2)
+    down2 = Conv2D(128, (3, 3), padding='same')(down2)
+    down2 = BatchNormalization()(down2)
+    down2 = Activation('relu')(down2)
+    down2_pool = MaxPooling2D((2, 2), strides=(2, 2))(down2)
+    # 32
+
+    down3 = Conv2D(256, (3, 3), padding='same')(down2_pool)
+    down3 = BatchNormalization()(down3)
+    down3 = Activation('relu')(down3)
+    down3 = Conv2D(256, (3, 3), padding='same')(down3)
+    down3 = BatchNormalization()(down3)
+    down3 = Activation('relu')(down3)
+    down3_pool = MaxPooling2D((2, 2), strides=(2, 2))(down3)
+    # 16
+
+    down4 = Conv2D(512, (3, 3), padding='same')(down3_pool)
+    down4 = BatchNormalization()(down4)
+    down4 = Activation('relu')(down4)
+    down4 = Conv2D(512, (3, 3), padding='same')(down4)
+    down4 = BatchNormalization()(down4)
+    down4 = Activation('relu')(down4)
+    down4_pool = MaxPooling2D((2, 2), strides=(2, 2))(down4)
+    # 8
+
+    center = Conv2D(1024, (3, 3), padding='same')(down4_pool)
+    center = BatchNormalization()(center)
+    center = Activation('relu')(center)
+    center = Conv2D(1024, (3, 3), padding='same')(center)
+    center = BatchNormalization()(center)
+    center = Activation('relu')(center)
+
+    x = Flatten()(center) 
+    x = Dense(4096, activation="relu")(x)
+    x = Dropout(0.5)(x)
+
+    x = Dense(nb_classes,activation='softmax')(x)
+    model = Model(img_input, x)
+    
+    #model.summay()
+    return model    
 # -------------------simp CNN{E}-------------------
 
 
@@ -163,9 +224,78 @@ def build_VGG16(img_h, img_w, nb_classes, channels=3):
     model.summary()
     
     return model
+
 ## way to use VGG16
 ## min-size: smallest: 48 * 48 default: 224 * 224 
 ## model = build_VGG16(img_w, img_h, tone_num, channels=1)      
+
+
+def build_VGG16_BN(img_h, img_w, nb_classes, channels=3):
+    input_shape = (img_h, img_w, channels)
+    img_input = Input(shape=input_shape)
+    
+    x = Conv2D(64, (3, 3),padding='same',name='block1_conv1')(img_input)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(64, (3, 3),padding='same',name='block1_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3),padding='same',name='block2_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(128, (3, 3),padding='same',name='block2_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+    x = Dropout(0.5)(x)
+    # Block 3
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+    
+    # Block 4
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+    x = Dropout(0.5)(x)
+
+    
+    # Block 5
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+    x = Conv2D(5, (1, 1),activation='relu',padding='same',name='conv1x1')(x)
+    x = GlobalAveragePooling2D()(x)  
+    
+    x = Dense(nb_classes, activation='softmax', name='predictions')(x)
+    model = Model(img_input, x)
+    model.summary()
+    
+    return model
 # -------------------VGG16{E}-------------------
 
 
@@ -211,11 +341,267 @@ def build_VGG19(img_h, img_w, nb_classes, channels=3):
     
     return model
 
+
+## VGG19 + BatchNormalization
+def build_VGG19_BN(img_h, img_w, nb_classes, channels=3):
+    
+    input_shape = (img_h, img_w, channels)
+    img_input = Input(shape=input_shape)
+    
+    x = Conv2D(64, (3, 3),padding='same',name='block1_conv1')(img_input)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(64, (3, 3),padding='same',name='block1_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3),padding='same',name='block2_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(128, (3, 3),padding='same',name='block2_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+    x = Dropout(0.5)(x)
+    
+    # Block 3
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv4')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)    
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+    
+    # Block 4
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv4')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)    
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+    x = Dropout(0.5)(x)
+
+    
+    # Block 5
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv4')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)    
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+    x = Conv2D(5, (1, 1),activation='relu',padding='same',name='conv1x1')(x)
+    x = GlobalAveragePooling2D()(x)  
+
+    x = Dense(nb_classes, activation='softmax', name='predictions')(x)
+
+    model = Model(img_input, x)
+    
+    model.summary()
+    return model
+
+
+def build_VGG16_BN_AVG(img_h, img_w, nb_classes, channels=3):
+    input_shape = (img_h, img_w,  channels)
+    img_input = Input(shape=input_shape)
+    
+    x = Conv2D(64, (3, 3),padding='same',name='block1_conv1')(img_input)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(64, (3, 3),padding='same',name='block1_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = AveragePooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3),padding='same',name='block2_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(128, (3, 3),padding='same',name='block2_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = AveragePooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+    x = Dropout(0.5)(x)
+    # Block 3
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(256, (3, 3),padding='same',name='block3_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = AveragePooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+    
+    # Block 4
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block4_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = AveragePooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+    x = Dropout(0.5)(x)
+
+    
+    # Block 5
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Conv2D(512, (3, 3),padding='same',name='block5_conv3')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = AveragePooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+    x = Conv2D(5, (1, 1),activation='relu',padding='same',name='conv1x1')(x)
+    x = GlobalAveragePooling2D()(x)  
+
+    x = Flatten()(x) 
+    x = Dense(4096, activation="relu")(x)
+    x = Dropout(0.5)(x)
+    
+    x = Dense(nb_classes, activation='softmax', name='predictions')(x)
+    
+    model = Model(img_input, x)
+    model.summary()
+    
+    return model
+
 ## way to use VGG19
 ## min-size: smallest: 48 * 48 default: 224 * 224 
 ## model = build_VGG19(img_w, img_h, tone_num, channels=1)    
 # -------------------VGG19{E}-------------------
 
+## from : https://www.pyimagesearch.com/2018/05/07/multi-label-classification-with-keras/
+def build_smallVGG19(img_w, img_h, nb_classes, channels=3):
+    chanDim = -1
+    # "channels_first" => chanDim=1
+    INPUTSIZE = (img_w, img_h, channels)
+    
+    model = Sequential()
+    # CONV => RELU => POOL
+    model.add(Conv2D(32, (3, 3), padding="same",
+        input_shape=INPUTSIZE))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+    model.add(MaxPooling2D(pool_size=(3, 3)))
+    model.add(Dropout(0.25))
+    # (CONV => RELU) * 2 => POOL
+    model.add(Conv2D(64, (3, 3), padding="same"))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+    model.add(Conv2D(64, (3, 3), padding="same"))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    # (CONV => RELU) * 2 => POOL
+    model.add(Conv2D(128, (3, 3), padding="same"))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+    model.add(Conv2D(128, (3, 3), padding="same"))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))    
+    
+    # first (and only) set of FC => RELU layers
+    model.add(Flatten())
+    model.add(Dense(1024))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+
+    # use a *softmax* activation for single-label classification
+    # and *sigmoid* activation for multi-label classification
+    model.add(Dense(nb_classes))
+    model.add(Activation("softmax"))
+    model.summary()
+    
+    # return the constructed network architecture
+    return model
+
+
+# min: mfcc : 40 * 40 * 1
+# 使用在voice 
+def build_cnn_blocks5_bn(img_h, img_w, nb_classes, channels=3):
+    input_shape = (img_h, img_w, channels)
+    melgram_input = Input(shape=input_shape)
+    
+    channel_axis = 2
+    freq_axis = 2
+    time_axis = 2
+            
+    # Input block
+    x = BatchNormalization(axis=freq_axis, name='bn_0_freq')(melgram_input)
+
+    # Conv block 1
+    x = Convolution2D(128, 3, 3, border_mode='same', name='conv1')(x)
+    x = BatchNormalization(axis=channel_axis, mode=0, name='bn1')(x)
+    x = ELU()(x)
+    x = MaxPooling2D(pool_size=(2, 2), name='pool1')(x)
+
+    # Conv block 2
+    x = Convolution2D(256, 3, 3, border_mode='same', name='conv2')(x)
+    x = BatchNormalization(axis=channel_axis, mode=0, name='bn2')(x)
+    x = ELU()(x)
+    x = MaxPooling2D(pool_size=(2, 2), name='pool2')(x)
+
+    # Conv block 3
+    x = Convolution2D(256, 3, 3, border_mode='same', name='conv3')(x)
+    x = BatchNormalization(axis=channel_axis, mode=0, name='bn3')(x)
+    x = ELU()(x)
+    x = MaxPooling2D(pool_size=(2, 2), name='pool3')(x)
+
+    # Conv block 4
+    x = Convolution2D(512, 3, 3, border_mode='same', name='conv4')(x)
+    x = BatchNormalization(axis=channel_axis, mode=0, name='bn4')(x)
+    x = ELU()(x)
+    x = MaxPooling2D(pool_size=(2, 2), name='pool4')(x)
+
+    # Conv block 5
+    x = Convolution2D(512, 3, 3, border_mode='same', name='conv5')(x)
+    x = BatchNormalization(axis=channel_axis, mode=0, name='bn5')(x)
+    x = ELU()(x)
+    x = MaxPooling2D(pool_size=(2, 2), name='pool5')(x)
+
+    x = Flatten()(x) 
+    x = Dense(4096, activation="relu")(x)
+    x = Dropout(0.5)(x)
+
+    x = Dense(nb_classes,activation='softmax')(x)
+    model = Model(melgram_input, x)
+    
+    return model 
 
 # -------------------resnet50{S}-------------------
 
@@ -282,6 +668,94 @@ def resnet50(img_h, img_w, nb_classes, channels=3):
     return model
 
 # -------------------resnet50{E}-------------------
+
+
+
+# -------------------DenseNet{S}-------------------
+from keras.regularizers import l2
+
+def conv_block(input, nb_filter, dropout_rate=None, weight_decay=1E-4):
+    x = Activation('relu')(input)
+    x = Convolution2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", use_bias=False,
+                      kernel_regularizer=l2(weight_decay))(x)
+    if dropout_rate is not None:
+        x = Dropout(dropout_rate)(x)
+    return x
+
+def dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=None, weight_decay=1E-4):
+    concat_axis = 1 if K.image_dim_ordering() == "th" else -1
+
+    feature_list = [x]
+
+    for i in range(nb_layers):
+        x = conv_block(x, growth_rate, dropout_rate, weight_decay)
+        feature_list.append(x)
+        x = concatenate(feature_list, axis=concat_axis)
+        nb_filter += growth_rate
+
+    return x, nb_filter
+
+def transition_block(input, nb_filter, dropout_rate=None, weight_decay=1E-4):
+    concat_axis = 1 if K.image_dim_ordering() == "th" else -1
+
+    x = Convolution2D(nb_filter, (1, 1), kernel_initializer="he_uniform", padding="same", use_bias=False,
+                      kernel_regularizer=l2(weight_decay))(input)
+    if dropout_rate is not None:
+        x = Dropout(dropout_rate)(x)
+    x = AveragePooling2D((2, 2), strides=(2, 2))(x)
+
+    x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
+                           beta_regularizer=l2(weight_decay))(x)
+
+    return x
+
+def createDenseNet(img_h, img_w, nb_classes, channels=3, depth=40, nb_dense_block=3, growth_rate=12, nb_filter=16, dropout_rate=None,
+                     weight_decay=1E-4, verbose=True):
+
+    input_shape = (img_h, img_w, channels)
+    img_input = Input(shape=input_shape)
+    
+    model_input = Input(shape=input_shape)
+
+    ## channel last :  concat_axis = 1
+    ## channel first:  concat_axis = 0
+    concat_axis = 1 
+
+    # layers in each dense block
+    nb_layers = int((depth - 4) / 3)
+
+    # Initial convolution
+    x = Convolution2D(nb_filter, (3, 3), kernel_initializer="he_uniform", padding="same", name="initial_conv2D", use_bias=False,
+                      kernel_regularizer=l2(weight_decay))(model_input)
+
+    x = BatchNormalization(axis=concat_axis, gamma_regularizer=l2(weight_decay),
+                            beta_regularizer=l2(weight_decay))(x)
+
+    # Add dense blocks
+    for block_idx in range(nb_dense_block - 1):
+        x, nb_filter = dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=dropout_rate,
+                                   weight_decay=weight_decay)
+        # add transition_block
+        x = transition_block(x, nb_filter, dropout_rate=dropout_rate, weight_decay=weight_decay)
+
+    # The last dense_block does not have a transition_block
+    x, nb_filter = dense_block(x, nb_layers, nb_filter, growth_rate, dropout_rate=dropout_rate,
+                               weight_decay=weight_decay)
+
+    x = Activation('relu')(x)
+    x = GlobalAveragePooling2D()(x)
+    x = Dense(nb_classes, activation='softmax', kernel_regularizer=l2(weight_decay), bias_regularizer=l2(weight_decay))(x)
+
+    densenet = Model(inputs=model_input, outputs=x)
+
+    if verbose: 
+        print("DenseNet-%d-%d created." % (depth, growth_rate))
+
+    return densenet
+
+# -------------------DenseNet{E}-------------------
+
+
 
 from keras import layers
 from keras.layers import GlobalMaxPooling2D
