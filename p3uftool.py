@@ -17,6 +17,16 @@ def sortdic(dic):
     rlst.reverse()
     return rlst
 
+# 根據dictionary key 排序
+def sortdic_keys(dic):
+    import collections
+    sortlst = collections.OrderedDict(sorted(dic.items()))
+    wrtlst = []
+    for sv in sortlst:
+        wrtlst.append((sv, labelmapping.get(sv)))
+    return wrtlst 
+
+
 # dictionary sort (5, 'key')
 def sort_by_value(d):
     items = d.items()
@@ -46,9 +56,16 @@ def put2dicnum(rdic, key, val):
         rdic[key] = lst
     return rdic
 
+# 處理格式 fu//ofu&&fu1//ofu1 -> {'fu':'ofu', 'fu1':'ofu1'}
+def dealformat1(str):
+    mapdic = {}
+    for v1 in str.split('&&'):
+        if v1.find('//') != -1:
+            (vv1, vv2) = v1.split('//', 1)
+            mapdic[vv1] = vv2
+    return mapdic
+
 # dictionary
-
-
 def put2dic(rdic, key, val, droprepeat=0):
     if not rdic.get(key, ''):
         if type(val) == str:
@@ -187,14 +204,13 @@ def getrandom_fromlst(rtblst, bookmax=3):
 
     avoidunlimitcircle = 0
     # avoidunlimitcircle => 避免無圖檔資料時. 成為無窮迴圈
-    while(len(dbrklst) < (bookmax + 1) and avoidunlimitcircle < 100):
+    while(len(dbrklst) < (bookmax) and avoidunlimitcircle < (len(rtblst)*2)):
         r = rtblst[random.randint(0, len(rtblst) - 1)]
         if r not in dbrklst:
             dbrklst.append(r)
         avoidunlimitcircle += 1
 
     return dbrklst
-
 
 def getListOfFiles(dirName):
     # create a list of file and sub directories
@@ -213,6 +229,7 @@ def getListOfFiles(dirName):
 
     return allFiles
 
+# 2 個產生一個list
 def chunks_nums(arr, m=10):
     return [arr[i:i+m] for i in range(0, len(arr), m)]
 
@@ -230,3 +247,81 @@ def countfiledate(ckfile, difftime):
         if (todayint - filetime) < difftime:
             flag = 1
     return flag    
+
+
+# dic1    : {'p__1951__Summer Travel Plans 暑假去旅行': ['p__5642__网上购物经历', 'p__2533__手机支付的好与坏', 'p__998__人工智能与人类未来',
+# weight1 : 給的權重 
+def combind_dic(dic1, weight1, dic2, weight2, dic3, weight3):
+
+    totaldic = {}      
+    totalgdic = {}     # 儲存產生的演算法
+    # ps('dic_cs.keys()', dic_cs.keys())
+    # ps('dic_lv.keys()', dic_lv.keys())
+    # ps('dic_kn.keys()', dic_kn.keys())
+    allkeys = list(dic1.keys()) + list(dic2.keys()) + list(dic3.keys())
+    # ps('allkeys', allkeys)
+
+    for kv in allkeys:
+        lst1, lst2, lst3 = [], [], []
+        if dic1.get(kv, ''):
+            lst1 = dic1[kv]
+        if dic2.get(kv, ''):
+            lst2 = dic2[kv]
+        if dic3.get(kv, ''):
+            lst3 = dic3[kv]
+        
+        algdic = {}    # 儲存id是透過何種演算法取得關聯的
+
+        tmpdic = {}
+        # print('===id(%s)===' % kv)
+        # ps('lst1', lst1)
+        # 倒排分數由 1,2,3...累加
+        lst1 = lst1[0:alg_max_related]
+        lst1.reverse()
+        ind = 1
+        for id in lst1:
+            addnum = weight1 + (weight1 * ind)
+            tmpdic = put2dicnums(tmpdic, id, addnum=addnum)
+            algdic = put2dicnum(algdic, id, 'ALS')
+            ind += 1
+
+        # ps('lst2', lst2)
+        lst2 = lst2[0:alg_max_related]
+        lst2.reverse()
+        ind = 1
+        for id in lst2:
+            addnum = weight2 + (weight2 * ind)
+            tmpdic = put2dicnums(tmpdic, id, addnum=addnum)
+            algdic = put2dicnum(algdic, id, 'BPR')
+            ind += 1
+
+        # ps('lst3', lst3) 
+        lst3 = lst3[0:alg_max_related]
+        lst3.reverse()
+        ind = 1
+        for id in lst3:
+            addnum = weight3 + (weight3 * ind)
+            tmpdic = put2dicnums(tmpdic, id, addnum=addnum)
+            algdic = put2dicnum(algdic, id, 'BM25')
+            ind += 1
+
+        sortlst = sortdic(tmpdic)
+        # ps('sortlst', sortlst)
+        if sortlst:
+            totaldic[kv] = [v[1] for v in sortlst[0:max_related]]
+            totalgdic[kv] = ['/'.join(algdic.get(v[1])) for v in sortlst[0:max_related]]
+
+    return totaldic, totalgdic
+
+
+def read_env(opfile='.env'):
+    of = open(opfile)
+    dic = {}
+    for line in of.readlines():
+        line = line.strip()
+        if line.find('=') != -1:
+            dic[line.split('=', 1)[0]] = line.split('=', 1)[1]
+    of.close()
+    # ps('dic', dic)
+    return dic
+
