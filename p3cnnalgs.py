@@ -1604,6 +1604,7 @@ def build_model_options(application, img_h, img_w , num_class, channels=3):
     elif application == 'nasnetmobile':
         base_model = NASNetMobile(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max') 
+    # smallest:75 * 75        
     elif application == 'inceptionresnetv2':
         base_model = InceptionResNetV2(include_top=False, weights=None,
             input_shape=INPUTSIZE, pooling='max') 
@@ -1667,3 +1668,55 @@ def build_model_transfer(application, img_w, img_h, num_class, lastdensesize=512
     model = Model(base_model.inputs, outputs)
     #model.summary()    
     return model    
+
+
+# include imagenet top, transfer learning build model
+def build_model_transfer_new(application, img_w, img_h, num_class, lastdensesize=512, channels=3):
+    ##shape can not smaller then 
+    from keras.applications.inception_resnet_v2 import InceptionResNetV2
+    from keras.applications import densenet       ## densenet121, densenet169, densenet201
+    from keras.applications.inception_v3 import InceptionV3
+    from keras.applications.xception import Xception
+    from keras.applications.vgg16 import VGG16
+    from keras.applications.vgg19 import VGG19
+    from keras.applications.resnet50 import ResNet50
+    from keras.applications.mobilenet import MobileNet
+    #from keras.applications.nasnet import NASNet  ## NASNetLarge, NASNetMobile
+    
+    input_tensor = Input(shape=(img_h, img_w, channels))
+
+    if application == 'inceptionv3':
+        base_model = InceptionV3(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 48 * 48 default: 224 * 224    
+    elif application == 'vgg16':
+        base_model = VGG16(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'vgg19':
+        base_model = VGG19(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 197 * 197 default: 224 * 224     
+    elif application == 'resnet50':
+        base_model = ResNet50(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    # smallest: 32 * 32 default: 224 * 224    
+    elif application == 'mobilenet':
+        base_model = MobileNet(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'Xception':
+        base_model = Xception(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'densenet121':
+        base_model = densenet.DenseNet121(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'densenet169':
+        base_model = densenet.DenseNet169(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'densenet201':
+        base_model = densenet.DenseNet201(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'nasnetlarge':
+        base_model = densenet.NASNetLarge(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'nasnetmobile':
+        base_model = densenet.NASNetMobile(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    elif application == 'inceptionresnetv2':
+         base_model = InceptionResNetV2(input_tensor=input_tensor, weights='imagenet', include_top=True)
+    
+    x = base_model.output
+    x = Dense(lastdensesize, activation='relu')(x)
+    # 最後一層不要 batch normalize / dropout
+    outputs = Dense(num_class, activation='softmax')(x)    
+    model = Model(base_model.inputs, outputs)
+    #model.summary()    
+    return model        
