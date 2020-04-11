@@ -1,9 +1,9 @@
 import jieba
 import jieba.posseg
 import numpy as np
-
+from sklearn.metrics import f1_score, accuracy_score, precision_recall_fscore_support
 from sklearn.externals import joblib
-from PIL import Image
+# from PIL import Image
 
 def jeiba_cut(cons, POSswitch=0):
     if POSswitch == 0:
@@ -348,3 +348,29 @@ def confusion_matrix_label_topN(strs, topN=3):
         # 顯示錯誤topN 及誤判占用比例
         print('label(%s) topN(%s) %s  error percent:%s/%s[%s]' % ((label+1), topN, topstrs, erratingint, thistotal, errating))
         label += 1
+
+
+# https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
+def F1_scores_types(Y_true, Y_pred):    
+    accuracy_scoreV = accuracy_score(Y_true, Y_pred)
+    
+    # f1_stand = f1_score(Y_true, Y_pred, average=None)   
+    # print('F1 scores:%s' % f1_stand)
+    f1_weighted = f1_score(Y_true, Y_pred, average='weighted')
+    f1_micro = f1_score(Y_true, Y_pred, average='micro')
+    f1_macro = f1_score(Y_true, Y_pred, average='macro')
+    print('Accuracy           :%s' % accuracy_scoreV)
+    print('F1 scores(micro)   :%s' % f1_micro)
+    print('F1 scores(macro)   :%s' % f1_macro)
+    print('F1 scores(weighted):%s' % f1_weighted)
+
+
+def disp_confustion_dictionary(testY, predY):
+    errdic = {}
+    for i, p in enumerate(predY):    
+        if testY[i] != p:
+            key = '%s(T)__%s(P)' % (testY[i], p)
+            errdic = put2dicnums(errdic, key)
+    sortlist = sort_by_value(errdic)
+    return errdic, sortlist
+    
