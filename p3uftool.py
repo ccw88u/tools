@@ -17,13 +17,14 @@ def sortdic(dic):
     rlst.reverse()
     return rlst
 
+
 # 根據dictionary key 排序
 def sortdic_keys(dic):
     import collections
-    sortlst = collections.OrderedDict(sorted(dic.items()))
+    sortlst = collections.OrderedDict(sorted(dic.items(), reverse=True))
     wrtlst = []
     for sv in sortlst:
-        wrtlst.append((sv, labelmapping.get(sv)))
+        wrtlst.append((sv, dic.get(sv)))
     return wrtlst 
 
 
@@ -34,6 +35,7 @@ def sort_by_value(d):
     backitems.sort()
     backitems.reverse()
     return [(backitems[i][1], backitems[i][0]) for i in range(0, len(backitems))]
+
 
 # dictionary key: 1
 def put2dicnums(rdic, key, addnum=1):
@@ -325,3 +327,10 @@ def read_env(opfile='.env'):
     # ps('dic', dic)
     return dic
 
+
+def read_file_base64(filepath):
+    with open(filepath, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+    # 產生 b'XXXXXX' 
+    encoded_string = '%s' % encoded_string    
+    return encoded_string[2:-1]
