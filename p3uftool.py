@@ -334,3 +334,21 @@ def read_file_base64(filepath):
     # 產生 b'XXXXXX' 
     encoded_string = '%s' % encoded_string    
     return encoded_string[2:-1]
+
+
+import re
+engpat = re.compile(r'[a-zA-Z]+')
+monthpat = re.compile(r'[0-9]+月')
+daypat = re.compile(r'[0-9]+日')
+day1pat = re.compile(r'[0-9]+號')
+numpat = re.compile(r'[0-9]+')
+mapday = {'31':'三十一', '30':'三十', '29':'二十九', '28':'二十八', '27':'二十七', '26':'二十六', '25':'二十五',
+              '24':'二十四', '23':'二十三', '22':'二十二', '21':'二十一', '20':'二十', '19':'十九', '19':'十八', 
+              '17': '十七', '16': '十六', '15': '十五', '14': '十四', '13': '十三', '12': '十二', '11': '十一',
+              '10': '十', '9':'九', '8':'八', '7':'七', '6':'六', '5':'五', '4':'四', '3':'三', '2':'二', '1':'一'}
+def replace_day_string(rs):
+    for fw in re.findall(daypat, rs):
+        numv = re.search(numpat, fw).group(0)
+        if mapday.get(numv, ''):
+            rs = rs.replace('%s日' % numv, '%s日' % mapday.get(numv))
+    return rs    
