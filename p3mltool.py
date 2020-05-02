@@ -3,7 +3,9 @@ import jieba.posseg
 import numpy as np
 from sklearn.metrics import f1_score, accuracy_score, precision_recall_fscore_support
 from sklearn.externals import joblib
+from sklearn.metrics import roc_auc_score
 # from PIL import Image
+from p3uftool import put2dicnums, sort_by_value
 
 def jeiba_cut(cons, POSswitch=0):
     if POSswitch == 0:
@@ -18,6 +20,44 @@ def jeiba_cut(cons, POSswitch=0):
                 aplst.append(n)
         rs = ' '.join(aplst)
     return rs
+
+
+# 從result 取得預測標籤及預測信心值 (多標籤)
+def model_predict_class_confidence(result):
+    #ps('rr', result)
+    pred_classes = result.argmax(axis=-1)
+    #ps('pred_classes', pred_classes)
+    pred_class_label = pred_classes[0]
+    pred_confidence = result[0][pred_class_label]
+    return pred_class_label, pred_confidence
+
+
+def disp_confustion_dictionary(testY, predY):
+
+    # 先取得目前資料總筆數
+    allsetdic = {}
+    for i, p in enumerate(testY):
+        allsetdic = put2dicnums(allsetdic, p)
+
+    # 計算預測錯誤筆數
+    errdic = {}
+    for i, p in enumerate(predY):
+        if testY[i] != p:
+            # ('eng[1127](T)__en(P)', 22)
+            key = '%s[%s](T)__%s(P)' % (testY[i], allsetdic[testY[i]], p)
+            errdic = put2dicnums(errdic, key)
+    sortlist = sort_by_value(errdic)
+    # 計算哪一個最常被預測錯誤
+    errmostdic = {}
+    for i, p in enumerate(predY):
+        if testY[i] != p:
+            # ('eng[1127](T)__en(P)', 22)
+            key = '%s' % (testY[i])
+            errmostdic = put2dicnums(errmostdic, key)
+    sortmoslist = sort_by_value(errmostdic)
+
+    return errdic, sortlist, errmostdic, sortmoslist, allsetdic
+
 
 def dropuselesschars(rs):
     import re
@@ -351,7 +391,7 @@ def confusion_matrix_label_topN(strs, topN=3):
 
 
 # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
-def F1_scores_types(Y_true, Y_pred):    
+def F1_scores_types(Y_true, Y_pred, roc=False):    
     accuracy_scoreV = accuracy_score(Y_true, Y_pred)
     
     # f1_stand = f1_score(Y_true, Y_pred, average=None)   
@@ -359,18 +399,21 @@ def F1_scores_types(Y_true, Y_pred):
     f1_weighted = f1_score(Y_true, Y_pred, average='weighted')
     f1_micro = f1_score(Y_true, Y_pred, average='micro')
     f1_macro = f1_score(Y_true, Y_pred, average='macro')
+    
     print('Accuracy           :%s' % accuracy_scoreV)
     print('F1 scores(micro)   :%s' % f1_micro)
     print('F1 scores(macro)   :%s' % f1_macro)
     print('F1 scores(weighted):%s' % f1_weighted)
-
-
-def disp_confustion_dictionary(testY, predY):
-    errdic = {}
-    for i, p in enumerate(predY):    
-        if testY[i] != p:
-            key = '%s(T)__%s(P)' % (testY[i], p)
-            errdic = put2dicnums(errdic, key)
-    sortlist = sort_by_value(errdic)
-    return errdic, sortlist
+    if roc:
+        roc_value = multiclass_roc_auc_score(Y_true, Y_pred, average="macro")
+        print('ROC                :%s' % roc_value)
     
+
+def multiclass_roc_auc_score(y_test, y_pred, average="macro"):
+    from sklearn import preprocessing
+    # lb = LabelBinarizer()
+    lb = preprocessing.LabelBinarizer()
+    lb.fit(y_test)
+    y_test = lb.transform(y_test)
+    y_pred = lb.transform(y_pred)
+    return roc_auc_score(y_test, y_pred, average=average)
